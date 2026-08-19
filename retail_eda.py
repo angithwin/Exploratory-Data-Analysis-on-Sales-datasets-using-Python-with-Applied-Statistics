@@ -189,3 +189,96 @@ plt.ylabel("Revenue ($)")
 plt.xticks(rotation=45)
 plt.tight_layout()
 plt.show()
+
+
+"""
+Regional Analysis
+"""
+
+regional_sales = (
+    sales.merge(
+        stores[
+            [
+                "store_id", 
+                "region",
+                "store_size"
+            ]
+        ],
+        on="store_id",
+        how="left"
+    )
+    .groupby("region")
+    .agg(
+        revenue=("revenue", "sum"),
+        units_sold=("quantity", "sum")
+    )
+    .reset_index()
+    .sort_values(
+        "revenue",
+        ascending=False
+    )
+)
+
+print(regional_sales)
+
+
+
+# Store Performance
+
+store_sales = [
+    sales.merge(
+        stores,
+        on = "store_id",
+        how = "left"
+    )
+    .groupby(
+        [
+            "store_id",
+            "store_name",
+            "region",
+            "store_size"
+        ]
+    )
+    .agg(
+        revenue = ("revenue", "sum"),
+        units_sold = ("quantity", "sum")
+    )
+    .reset_index()
+]
+
+
+
+# Top Stores
+
+"""
+# Convert list to a DataFrame
+df = pd.DataFrame(store_sales)
+
+# Work on original code perfectly
+print(df["revenue"].sort_values(ascending=False).head(10).index)
+"""
+
+# Sort the list of dictionaries by the revenue key in descending order
+sorted_sales = sorted(store_sales, key=lambda x: x["revenue"], reverse=True)
+
+# Print the top 10 items (or just their indexes/identities)
+for item in sorted_sales[:10]:
+    print(item)
+
+
+
+
+"""
+Inventory risk analysis
+"""
+
+inventory["stock_status"] = np.where(
+    inventory["stock_on_hand"] < inventory["reorder_point"],
+    "High Risk",
+    "Healthy"
+)
+
+# Calculate the percentage of stores at risk
+print(
+    inventory["stock_status"].value_counts(normalize=True) * 100
+)
