@@ -282,3 +282,54 @@ inventory["stock_status"] = np.where(
 print(
     inventory["stock_status"].value_counts(normalize=True) * 100
 )
+
+
+
+"""
+First Decision Intelligence insight
+"""
+
+# Calculate average daily demand
+average_demand = (
+    sales
+    .groupby(
+        [
+            "store_id",
+            "product_id"
+        ]
+    )["quantity"]
+    .mean()
+    .reset_index(
+        name="avg_daily_demand"
+    )
+)
+
+# Merge with inventory to identify products at risk of stockouts
+inventory_analysis = inventory.merge(
+    average_demand,
+    on=[
+        "store_id",
+        "product_id"
+    ],
+    how="left"
+)
+
+
+# Calculate estimated days of stock
+inventory_analysis["days_of_stock"] = (
+    inventory_analysis["stock_on_hand"]
+    /
+    inventory_analysis["avg_daily_demand"]
+)
+
+
+# Find most urgent products
+critical_inventory = (
+    inventory_analysis
+    .sort_values(
+        "days_of_stock"
+    )
+    .head(20)
+)
+
+print(critical_inventory)
