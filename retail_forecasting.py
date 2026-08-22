@@ -336,3 +336,16 @@ forecast_30_days = pd.DataFrame({
 })
 
 print(forecast_30_days)
+
+# Calculate Total
+
+total_forecast = (
+    forecast_30_days["forecast_demand"]
+    .sum()
+)
+
+print(
+    "30-Day Forecast:",
+    round(total_forecast, 0),
+    "units"
+)
